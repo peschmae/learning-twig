@@ -24,5 +24,5 @@ CREATE TABLE IF NOT EXISTS user (
   admin int(1) NOT NULL DEFAULT 0
 );
 
-# INSERT INTO user(username, email, password, author, admin) VALUES ('peschmae', 'mathias.petermann@gmail.com','', 1, 1);
-# INSERT INTO user(username, email, password, author, admin) VALUES ('psmae', 'mathias.petermann@gmail.com','', 0, 0);
+# INSERT INTO user(username, email, password, author, admin) VALUES ('Peter', 'peter@griffin.com','', 1, 1);
+# INSERT INTO user(username, email, password, author, admin) VALUES ('Griffin', 'griffin@peter.com','', 0, 0);

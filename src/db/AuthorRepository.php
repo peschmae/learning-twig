@@ -22,7 +22,9 @@ class AuthorRepository extends AbstractRepository {
 	 */
 	public function findAllAuthors() {
 		/** @var \mysqli_result $queryResult */
-		$queryResult = $this->sqlConnection->query('SELECT id,username,email,author,admin FROM user WHERE author = 1');
+		$queryResult = $this->sqlConnection->query(
+			'SELECT id,username,password,email,author,admin FROM user WHERE author = 1'
+		);
 
 		if ($queryResult !== FALSE ) {
 			$authors = array();
@@ -32,6 +34,7 @@ class AuthorRepository extends AbstractRepository {
 				$authors[] = $this->mapToAuthor(
 					$row['id'],
 					$row['username'],
+					$row['password'],
 					$row['email'],
 					$row['author'],
 					$row['admin']
@@ -55,42 +58,71 @@ class AuthorRepository extends AbstractRepository {
 	public function add($author) {
 
 		/** @var \mysqli_stmt $preparedStatement */
-		//$preparedStatement = $this->sqlConnection->prepare('INSERT INTO user(username, email, password, author, admin) VALUES (?, ?, ?, ?, ?)');
+		$preparedStatement = $this->sqlConnection->prepare(
+			'INSERT INTO user(username, email, password, author, admin) VALUES (?, ?, ?, ?, ?)'
+		);
 
+		$preparedStatement->bind_param(
+			'sssii',
+			$author->username,
+			$author->email,
+			$author->getPassword(),
+			intval($author->author),
+			intval($author->admin)
+		);
 
-		//return $preparedStatement->execute();
-		return FALSE;
+		$result = $preparedStatement->execute();
+
+		$preparedStatement->close();
+
+		return $result;
 	}
 
 	/**
-	 * @param \mpetermann\blog\model\Article $article
+	 * @param \mpetermann\blog\model\Author $author
 	 *
 	 * @return boolean
 	 */
-	public function update($article) {
+	public function update($author) {
 		return FALSE;
 	}
 
 	/**
-	 * @param $object
+	 * @param \mpetermann\blog\model\Author $author
 	 *
-	 * @return bool|mixed
+	 * @return bool
 	 */
-	public function remove($object) {
-		return FALSE;
+	public function remove($author) {
+		/** @var \mysqli_stmt $preparedStatement */
+		$preparedStatement = $this->sqlConnection->prepare(
+			'DELETE FROM user WHERE id = ?'
+		);
+
+		$preparedStatement->bind_param(
+			'i',
+			$author->id
+		);
+
+		$result = $preparedStatement->execute();
+
+		$preparedStatement->close();
+
+		return $result;
+
 	}
 
 
 	/**
 	 * @param int $id
 	 * @param string $username
+	 * @param string $password
 	 * @param string $email
 	 * @param string $author
 	 * @param string $admin
 	 *
 	 * @return \mpetermann\blog\model\Author
 	 */
-	protected function mapToAuthor($id, $username, $email, $author, $admin) {
+	protected function mapToAuthor($id, $username, $password, $email, $author, $admin) {
 		$authorObject = new \mpetermann\blog\model\Author();
 
 		if (isset($id)) {
@@ -99,6 +131,7 @@ class AuthorRepository extends AbstractRepository {
 
 		$authorObject->username = $username;
 		$authorObject->email = $email;
+		$authorObject->setPassword($password);
 		$authorObject->author = (bool) intval($author);
 		$authorObject->admin = (bool) intval($admin);
 

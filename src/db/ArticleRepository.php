@@ -57,7 +57,9 @@ class ArticleRepository extends AbstractRepository {
 	public function add($article) {
 
 		/** @var \mysqli_stmt $preparedStatement */
-		$preparedStatement = $this->sqlConnection->prepare('INSERT INTO article(title,lead,body,author,timestamp,modifiedTimestamp) VALUES (?, ?, ?, ?, ?, ?)');
+		$preparedStatement = $this->sqlConnection->prepare(
+			'INSERT INTO article(title,lead,body,author,timestamp,modifiedTimestamp) VALUES (?, ?, ?, ?, ?, ?)'
+		);
 
 		$now = (int) date('U');
 
@@ -71,7 +73,11 @@ class ArticleRepository extends AbstractRepository {
 			$now
 		);
 
-		return $preparedStatement->execute();
+		$result = $preparedStatement->execute();
+
+		$preparedStatement->close();
+
+		return $result;
 	}
 
 	/**
@@ -84,12 +90,26 @@ class ArticleRepository extends AbstractRepository {
 	}
 
 	/**
-	 * @param $object
+	 * @param \mpetermann\blog\model\Article $article
 	 *
-	 * @return bool|mixed
+	 * @return bool
 	 */
-	public function remove($object) {
-		return FALSE;
+	public function remove($article) {
+		/** @var \mysqli_stmt $preparedStatement */
+		$preparedStatement = $this->sqlConnection->prepare(
+			'DELETE FROM article WHERE id = ?'
+		);
+
+		$preparedStatement->bind_param(
+			'i',
+			$article->id
+		);
+
+		$result = $preparedStatement->execute();
+
+		$preparedStatement->close();
+
+		return $result;
 	}
 
 	/**
